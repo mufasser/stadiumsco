@@ -1,0 +1,50 @@
+/**
+ * All of the CSS for your public-facing functionality should be
+ * included in this file.
+ */
+
+ html,body{
+    background: #F5F5F5;
+ }
+
+.vip-team-list-item{
+    list-style-type: none;
+    margin: 0;
+    margin-bottom: 30px;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #FFFFFF;
+    border-radius: 20px;
+    min-width: 200px;
+    min-height: 200px;
+
+}
+
+
+/* Mobile Screen Media Query */
+
+@media only screen and (max-width: 600px) {
+    .vip-team-list-item{
+        min-width: 107px;
+        min-height: 110px;
+    }
+}
+
+/* Table Screen Media Query - */
+
+@media only screen and (min-width: 600px) and (max-width: 990px) {
+    .vip-team-list-item{
+        min-width: 137px;
+        min-height: 120px;
+    }
+}
+
+/* Desktop Screen Media Query */
+
+@media only screen and (min-width: 992px) {
+    .vip-team-list-item{
+        min-width: 107px;
+        min-height: 100px;
+    }
+}
