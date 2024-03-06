@@ -9,14 +9,28 @@ class Country extends XS2Event_API {
 
     
      // get remote country list
-     function getCountry($country='', $page=1, $perPage=100){
-        $data = ['page'=>$page, "page_size"=> $perPage];
+     function fetchCountry($country='', $page=1, $perPage=100){
 
         if(!empty($country)){
             $data['country'] = $country;
         }
-        $response=  $this->getRequest('/cities', $data);
+        $response=  $this->getRequest('/countries', []);
+        // update countries in wp_option table
+        update_option('tc_countries', $response);
         return $response;
+    }
+
+
+    function getCountry($countryCode){
+
+        $countryList = get_option('tc_countries');
+        $countryList = json_decode($countryList, true);
+        
+        $filteredCountry = array_filter($countryList, function($country) use ($countryCode) {
+            return $country['code'] == $countryCode;
+        });
+
+        return $filteredCountry;
     }
 
     function __destruct() {

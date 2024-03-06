@@ -75,37 +75,22 @@ class Product extends Travel_Connection_API {
         $this->competition = $competition;
     }
 
-    function setTicketType($ticket_type){
-        $this->ticket_type = $ticket_type;
+    function setProductVenue($venue){
+        $this->venue = $venue;
     }
 
-    function setCity($city){
-        $this->city = $city;
+    function setProductIncludeCompleted($include_completed){
+        $this->include_completed = $include_completed;
     }
 
-    function setSupplierType($supplier_type){
-        $this->supplier_type = $supplier_type;
+    function setProductTeam($team){
+        $this->team = $team;
     }
 
     function setSupplierId($supplier_id){
         $this->supplier_id = $supplier_id;
     }
 
-    function setCategoryId($category_id){
-        $this->category_id = $category_id;
-    }
-
-    function setSubCategory($sub_category){
-        $this->sub_category = $sub_category;
-    }
-
-    function setCategoryType($category_type){
-        $this->category_type = $category_type;
-    }
-
-    function setTicketStatus($ticket_status){
-        $this->ticket_status = $ticket_status;
-    }
 
     // getters
 
@@ -117,61 +102,48 @@ class Product extends Travel_Connection_API {
         return $this->page_size;
     }
 
-    function getTicketValidFrom(){
-        return $this->ticket_validfrom;
+
+    function getProductType(){
+        return $this->type;
     }
 
-    function getTicketValidUntil(){
-        return $this->ticket_validuntil;
+    function getProductSearch(){
+        return $this->search;
     }
 
-    function getFaceValue(){
-        return $this->face_value;
+    function getProductModifiedSince(){
+        return $this->modified_since;
     }
 
-    function getStock(){
-        return $this->stock;
+    function getProductStartDate(){
+        return $this->start_date;
     }
 
-    function getVenueId(){
-        return $this->venue_id;
+    function getProductEndDate(){
+        return $this->end_date;
     }
 
-    function getEventId(){
-        return $this->event_id;
+    function getProductIsConfirmed(){
+        return $this->is_confirmed;
     }
 
-    function getTicketType(){
-        return $this->ticket_type;
+    function getProductCompetition(){
+        return $this->competition;
     }
 
-    function getCity(){
-        return $this->city;
+    function getProductVenue(){
+        return $this->venue;
     }
 
-    function getSupplierType(){
-        return $this->supplier_type;
+    function getProductTeam(){
+        return $this->team;
     }
 
-    function getSupplierId(){
-        return $this->supplier_id;
+    function getProductIncludeCompleted(){
+        return $this->include_completed;
     }
 
-    function getCategoryId(){
-        return $this->category_id;
-    }
-
-    function getSubCategory(){
-        return $this->sub_category;
-    }
-
-    function getCategoryType(){
-        return $this->category_type;
-    }
-
-    function getTicketStatus(){
-        return $this->ticket_status;
-    }
+    
 
     function getPagination(){
         return $this->pagination;
@@ -202,71 +174,56 @@ class Product extends Travel_Connection_API {
             $data['page_size'] = $this->getPageSize();
         }
 
-        if(!empty($this->getTicketValidFrom())){
-            $data['ticket_validfrom'] = $this->getTicketValidFrom();
+        if(!empty($this->getProductType())){
+            $data['type'] = $this->getProductType();
         }
 
-        if(!empty($this->getTicketValidUntil())){
-            $data['ticket_validuntil'] = $this->getTicketValidUntil();
+        if(!empty($this->getProductSearch())){
+            $data['search'] = $this->getProductSearch();
         }
 
-        if(!empty($this->getFaceValue())){
-            $data['face_value'] = $this->getFaceValue();
+        if(!empty($this->getProductModifiedSince())){
+            $data['modified_since'] = $this->getProductModifiedSince();
         }
 
-        if(!empty($this->getStock())){
-            $data['stock'] = $this->getStock();
+        if(!empty($this->getProductStartDate())){
+            $data['start_date'] = $this->getProductModifiedSince();
         }
 
-        if(!empty($this->getVenueId())){
-            $data['venue_id'] = $this->getVenueId();
+        if(!empty($this->getProductEndDate())){
+            $data['end_date'] = $this->getProductEndDate();
         }
 
-        if(!empty($this->getEventId())){
-            $data['event_id'] = $this->getEventId();
+        if(!empty($this->getProductIsConfirmed())){
+            $data['is_confirmed'] = $this->getProductIsConfirmed();
         }
 
-        if(!empty($this->getTicketType())){
-            $data['ticket_type'] = $this->getTicketType();
+        if(!empty($this->getProductCompetition())){
+            $data['competition'] = $this->getProductCompetition();
         }
 
-        if(!empty($this->getCity())){
-            $data['city'] = $this->getCity();
+        if(!empty($this->getProductVenue())){
+            $data['venue'] = $this->getProductVenue();
         }
 
-        if(!empty($this->getSupplierType())){
-            $data['supplier_type'] = $this->getSupplierType();
+        if(!empty($this->getProductTeam())){
+            $data['team'] = $this->getProductTeam();
         }
 
-        if(!empty($this->getSupplierId())){
-            $data['supplier_id'] = $this->getSupplierId();
+        if(!empty($this->getProductIncludeCompleted())){
+            $data['include_completed'] = $this->getProductIncludeCompleted();
         }
 
-        if(!empty($this->getCategoryId())){
-            $data['category_id'] = $this->getCategoryId();
-        }
-
-        if(!empty($this->getSubCategory())){
-            $data['sub_category'] = $this->getSubCategory();
-        }
-
-        if(!empty($this->getCategoryType())){
-            $data['category_type'] = $this->getCategoryType();
-        }
-
-        if(!empty($this->getTicketStatus())){
-            $data['ticket_status'] = $this->getTicketStatus();
-        }
         
         // print_r($data); exit;
         
-        $response=  $this->getRequest('/tickets', $data);
+        $response=  $this->getRequest('/product', $data);
         return $response;
     }
      function getTicketById($ticketId){
 
         // $data = ['venue_id'=>$venueId];
-        $response=  $this->getRequest('/tickets/'.$ticketId);
+        $response=  $this->getRequest('/product/'.$ticketId);
         return $response;
     }
 

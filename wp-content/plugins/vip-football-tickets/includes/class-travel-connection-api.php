@@ -74,8 +74,11 @@ class Travel_Connection_API {
         $this->password = "_576osMZ9@";
         $this->grant_type = "password";
         // $this->api_key = "583e4d7146df4f90bd0c9d55ff27592f";
+        $tokenResponse = $this->getToken();
+        if(!$tokenResponse){
+            $this->authRequest();
+        }
         $this->headers = array(
-            'x-api-key:'.$this->api_key,
             'accept:application/json'
         );
 
@@ -119,7 +122,7 @@ class Travel_Connection_API {
     }
 
     // Auth request
-    function authRequest($endPoint='oauthorize/token', $data, $params = []) {
+    function authRequest($endPoint='oauthorize/token', $data=[], $params = []) {
 
         $url = $this->baseUrl.$endPoint;
         if($params){
@@ -152,6 +155,7 @@ class Travel_Connection_API {
         $response = curl_exec($curl);
 
         curl_close($curl);
+        $this->setToken($response);
         return $response;
 
     }
@@ -174,9 +178,36 @@ class Travel_Connection_API {
             $this->token_type = $response['token_type'];
             $this->expires_in = $response['expires_in'];
             // update api session details
-            update_option("travel_connection_api", $data);
+            update_option("tc_api_token", [
+                'access_token' => $this->access_token,
+                'refresh_token' => $this->refresh_token,
+                'token_type' => $this->token_type,
+                'expires_in' => time()+$this->expires_in
+            ]);
             
             return true;
+        }
+        return false;
+    }
+
+    function getToken(){
+        
+        $apiToken = get_option("tc_api_token");
+        if($apiToken){
+            if($apiToken['expires_in'] > time()){
+                $this->access_token = $apiToken['access_token'];
+                $this->refresh_token = $apiToken['refresh_token'];
+                $this->token_type = $apiToken['token_type'];
+                $this->expires_in = $apiToken['expires_in'];
+                return true;
+            }else{
+                // refresh token
+                $this->authRequest();
+                return $this->getToken();
+            }
+        }else{
+            $this->authRequest();
+            return $this->getToken();
         }
         return false;
     }
