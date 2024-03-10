@@ -58,7 +58,7 @@ class Travel_Connection_API {
     public $expires_in;
 
     // headers
-    public $headers;
+    public $headers = [];
 
     /*
     {
@@ -74,12 +74,13 @@ class Travel_Connection_API {
         $this->password = "_576osMZ9@";
         $this->grant_type = "password";
         // $this->api_key = "583e4d7146df4f90bd0c9d55ff27592f";
-        $tokenResponse = $this->getToken();
-        if(!$tokenResponse){
-            $this->authRequest();
-        }
+        // $tokenResponse = $this->getToken();
+        // if(!$tokenResponse){
+        //     $this->authRequest();
+        // }
         $this->headers = array(
-            'accept:application/json'
+            'Content-Type: application/json',
+            'Accept: application/json'
         );
 
     }
@@ -96,29 +97,48 @@ class Travel_Connection_API {
 
         $params = http_build_query($params);
         $url = $this->baseUrl.$endPoint.'?'.$params;
-        // die($url);
         $curl = curl_init();
-
-        curl_setopt_array($curl, array(
-        CURLOPT_URL => $url,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_ENCODING => '',
-        CURLOPT_MAXREDIRS => 10,
-        CURLOPT_TIMEOUT => 0,
-        CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-        CURLOPT_CUSTOMREQUEST => 'GET',
-        CURLOPT_HTTPHEADER => [
-            'x-api-key:'.$this->api_key,
-            'accept:application/json'
-            ]
-        ));
-
+        $curlOpt = array(
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+            CURLOPT_HTTPHEADER => $this->getTokenHeader($this->getToken())
+            );
+            curl_setopt_array($curl, $curlOpt);
         $response = curl_exec($curl);
-
+        // echo '<h3>Get Request CurlOPt: </h3><pre>';
+        //     print_r($curlOpt); 
+        // echo '</pre>';
+        // echo '<h3>Get Request Response: </h3><pre>';
+        //         print_r($response); 
+        //     echo '</pre>';
         curl_close($curl);
-        return $response;
+        return $response;   
 
+    }
+
+    function setHeaders($headers){
+        $this->headers = $headers;
+    }
+
+    function getHeaders(){
+       return  $this->headers = array(
+            'Content-Type: application/json',
+            'Accept: application/json'
+        );
+    }
+
+    function getTokenHeader($token){
+        return [
+            'Content-Type: application/json',
+            'Accept: application/json',
+            'Authorization: Bearer '.$token
+        ];
     }
 
     // Auth request
@@ -139,51 +159,49 @@ class Travel_Connection_API {
         // die($url);
         $curl = curl_init();
 
-        curl_setopt_array($curl, array(
-        CURLOPT_URL => $url,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_ENCODING => '',
-        CURLOPT_MAXREDIRS => 10,
-        CURLOPT_TIMEOUT => 0,
-        CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-        CURLOPT_CUSTOMREQUEST => 'POST',
-        CURLOPT_POSTFIELDS => $data,
-        CURLOPT_HTTPHEADER => []
-        ));
+        $curlOpt =  array(
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => $data,
+            CURLOPT_HTTPHEADER => $this->getHeaders()
+            );
+        // print_r($curlOpt); exit;
+        curl_setopt_array($curl,$curlOpt);
 
         $response = curl_exec($curl);
-
-        curl_close($curl);
         $this->setToken($response);
+        curl_close($curl);
         return $response;
 
     }
 
     function setToken($data){
 
-    /*
-    {
-    "status": "success",
-    "access_token": "2f6c13aaf48d77cb20c3b75bdf9b860f9e0063f64d2853108725311451aa43b0",
-    "refresh_token": "21ce887f704c70ca43c0f1eab0adfeee587afb76c7c7a71d0636cab0ac2dcacf",
-    "token_type": "bearer",
-    "expires_in": 3600
-}
-    */
+    
+
         $response = json_decode($data, true);
+        
+        // echo '<pre>'; print_r($response); echo '</pre>';
+
         if($response['status'] == 'success'){
             $this->access_token = $response['access_token'];
             $this->refresh_token = $response['refresh_token'];
             $this->token_type = $response['token_type'];
             $this->expires_in = $response['expires_in'];
             // update api session details
-            update_option("tc_api_token", [
+            $tokenData = [
                 'access_token' => $this->access_token,
                 'refresh_token' => $this->refresh_token,
                 'token_type' => $this->token_type,
                 'expires_in' => time()+$this->expires_in
-            ]);
+            ];
+            update_option("tc_api_token", $tokenData);
             
             return true;
         }
@@ -191,25 +209,30 @@ class Travel_Connection_API {
     }
 
     function getToken(){
+
+        $this->authRequest();
+        return $this->access_token;
         
-        $apiToken = get_option("tc_api_token");
-        if($apiToken){
-            if($apiToken['expires_in'] > time()){
-                $this->access_token = $apiToken['access_token'];
-                $this->refresh_token = $apiToken['refresh_token'];
-                $this->token_type = $apiToken['token_type'];
-                $this->expires_in = $apiToken['expires_in'];
-                return true;
-            }else{
-                // refresh token
-                $this->authRequest();
-                return $this->getToken();
-            }
-        }else{
-            $this->authRequest();
-            return $this->getToken();
-        }
-        return false;
+        // $apiToken = get_option("tc_api_token");
+
+        // if($apiToken){
+        //     if($apiToken['expires_in'] > time()){
+        //         $this->access_token = $apiToken['access_token'];
+        //         $this->refresh_token = $apiToken['refresh_token'];
+        //         $this->token_type = $apiToken['token_type'];
+        //         $this->expires_in = $apiToken['expires_in'];
+        //         return $this->access_token;
+        //     }else{
+        //         // refresh token
+        //         $this->authRequest();
+        //         return $this->getToken();
+        //     }
+        // }else{
+        //     $this->authRequest();
+        //     // die($apiToken.'mi die');
+        //     return $this->getToken();
+        // }
+        // return false;
     }
 
     // post request
@@ -234,11 +257,7 @@ class Travel_Connection_API {
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         CURLOPT_CUSTOMREQUEST => 'POST',
         CURLOPT_POSTFIELDS => $data,
-        CURLOPT_HTTPHEADER => [
-            'x-api-key:'.$this->api_key,
-            'accept:application/json',
-            'Content-Type:application/json'
-            ]
+        CURLOPT_HTTPHEADER => $this->getTokenHeader($this->getToken())
         ));
 
         $response = curl_exec($curl);

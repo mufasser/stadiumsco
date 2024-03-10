@@ -1,6 +1,10 @@
 <?php
+require_once PLUGIN_DIR_PATH.'includes/class-travel-connection-api.php'; 
 
-class Team extends XS2Event_API {
+
+class Tc_Team extends Travel_Connection_API {
+
+    private $_endpoint = 'teams';
 
     public int $page_size = 350; // integer: number of items per page (default: 10)
     public int $page = 1; // integer: current page (default: 1)
@@ -35,7 +39,7 @@ class Team extends XS2Event_API {
     function setPageSize($pageSize){
         $this->page_size = $pageSize;
     }
-
+/*
     function setTeamSlug($team_slug){
         $this->team_slug = $team_slug;
     }
@@ -75,7 +79,7 @@ class Team extends XS2Event_API {
     function setTournamentId($tournament_id){
         $this->tournament_id = $tournament_id;
     }
-
+*/
     // GETTERS
 
     function getPagination(){
@@ -140,11 +144,23 @@ class Team extends XS2Event_API {
         return $this->tournament_id;
     }
 
-    
+    function fetchTeams(){
+        $response = [];
+        $teams =  json_decode($this->getRequest($this->_endpoint, []), true);
+        $teamsList = $teams['data'];
+        $totalTeams = $teams['total'];
+        $to = $teams['to'];
+        $limit = $teams['per_page'];
+        //page[number]
+        if(isset($teams['data'])){
+            $response = $teams['data'];
+        }
+        return $response;
+    }
 
-
+/*
      // get remote country list
-     function getTeams(){
+     function _getTeams(){
 
         $data = [];
 
@@ -198,6 +214,8 @@ class Team extends XS2Event_API {
         $response=  $this->getRequest('/teams', $data);
         return $response;
     }
+    */
+
      function getTeamById($teamId){
 
         // $data = ['venue_id'=>$venueId];

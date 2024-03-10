@@ -1,21 +1,22 @@
 <?php
 
 require_once PLUGIN_DIR_PATH.'utils/class-utils.php';
+require_once PLUGIN_DIR_PATH.'includes/class-travel-connection-api.php'; 
 
+class Tc_Tournament extends Travel_Connection_API  {
 
+    private $_endpoint = 'competitions';
 
-class Tournament extends XS2Event_API  {
-
-    public $page_size = 300; // integer: number of items per page (default: 10)
-    public $page = 1; // integer: current page (default: 1)
-    public $region = ""; // string: iso country. For F1/Moto use "world"
-    public $date_start = ""; // string: date start
-    public $date_stop; // string: date stop. For F1/Moto use "now"; // string: date_stop
-    public $sport_type = "soccer"; // string: soccer, motogp, tennis,rugby, darts, boxing, formula1
-    public $tournament_type = ""; // string: tournament_type: league /cup
-    public $tournament_name = ""; // string: tournament name
-    public $official_name = ""; // string: official name
-    public $season = ""; // string: season
+    // public $page_size = 300; // integer: number of items per page (default: 10)
+    // public $page = 1; // integer: current page (default: 1)
+    // public $region = ""; // string: iso country. For F1/Moto use "world"
+    // public $date_start = ""; // string: date start
+    // public $date_stop; // string: date stop. For F1/Moto use "now"; // string: date_stop
+    // public $sport_type = "soccer"; // string: soccer, motogp, tennis,rugby, darts, boxing, formula1
+    // public $tournament_type = ""; // string: tournament_type: league /cup
+    // public $tournament_name = ""; // string: tournament name
+    // public $official_name = ""; // string: official name
+    // public $season = ""; // string: season
 
     public $tournamentList;
     public $skipTournamentList;
@@ -26,35 +27,37 @@ class Tournament extends XS2Event_API  {
         $this->utils = new Utils();
         // $this->setRegion("GBR");
         // $this->setDateStop("gt:".date("Y-m-d"));
-        $this->setTournamentList([
-            ["name"=>"Premier League", "primary_color"=>"#3D195B", "secondary_color"=>"#FFFFF"],
-            ["name"=>"FA Cup", "primary_color"=>"#D71921", "secondary_color"=>"#C1C5C6"],
-            ["name"=>"Carabao Cup", "primary_color"=>"#00935D", "secondary_color"=>"#FFFFFF"],
-            ["name"=>"Champions League", "primary_color"=>"#010040", "secondary_color"=>"#FFFFFF"],
-            ["name"=>"Europa League", "primary_color"=>"#00000", "secondary_color"=>"#FF6900"],
-            ["name"=>"Conference League", "primary_color"=>"#00000", "secondary_color"=>"#00BE14"],
-            ["name"=>"Championship", "primary_color"=>"#B69B40", "secondary_color"=>"#00138A"],
-            ["name"=>"Scottish Premier League", "primary_color"=>"#19284E", "secondary_color"=>"#FBB22E"],
-            ["name"=>"International", "primary_color"=>"#2957AE", "secondary_color"=>"#E21115"],
-            // "FA Cup",
-            // "Carabao Cup",
-            // "Champions League",
-            // "Europa League",
-            // "Conference League",
-            // "Championship",
-            // "Scottish Premier League",
-            // "International"
-        ]);
+        // $this->setTournamentList([
+        //     ["name"=>"Premier League", "primary_color"=>"#3D195B", "secondary_color"=>"#FFFFF"],
+        //     ["name"=>"FA Cup", "primary_color"=>"#D71921", "secondary_color"=>"#C1C5C6"],
+        //     ["name"=>"Carabao Cup", "primary_color"=>"#00935D", "secondary_color"=>"#FFFFFF"],
+        //     ["name"=>"Champions League", "primary_color"=>"#010040", "secondary_color"=>"#FFFFFF"],
+        //     ["name"=>"Europa League", "primary_color"=>"#00000", "secondary_color"=>"#FF6900"],
+        //     ["name"=>"Conference League", "primary_color"=>"#00000", "secondary_color"=>"#00BE14"],
+        //     ["name"=>"Championship", "primary_color"=>"#B69B40", "secondary_color"=>"#00138A"],
+        //     ["name"=>"Scottish Premier League", "primary_color"=>"#19284E", "secondary_color"=>"#FBB22E"],
+        //     ["name"=>"International", "primary_color"=>"#2957AE", "secondary_color"=>"#E21115"],
+        //     ["name"=>"International", "primary_color"=>"#2957AE", "secondary_color"=>"#E21115"],
+
+        //     // "FA Cup",
+        //     // "Carabao Cup",
+        //     // "Champions League",
+        //     // "Europa League",
+        //     // "Conference League",
+        //     // "Championship",
+        //     // "Scottish Premier League",
+        //     // "International"
+        // ]);
 
         $this->skipTournamentList = [
             "Premier League Scotland"
         ];
     }
+/*
 
     function setTournamentList($tournamentList){
         $this->tournamentList = $tournamentList;
     }
-
     // setter
 
     function setPage($page){
@@ -129,8 +132,36 @@ class Tournament extends XS2Event_API  {
         return $this->tournamentList;
     }
 
+    */
+
      // get remote country list
-     function getTournaments(){
+     function fetchTournaments(){
+
+        $response = [];
+        $tournaments =  json_decode($this->getRequest($this->_endpoint, []), true);
+
+        if(isset($tournaments['data'])){
+            $response = $tournaments['data'];
+        }
+        return $response;
+     }
+
+     function syncTournaments($tournaments){
+
+        // update $tournaments on post_type tournament by foreach loop
+
+        foreach($tournaments as $tournament){
+            // print_r($tournament); exit;
+
+            $this->saveTournament($tournament);
+        }  
+
+        $tournaments =  $this->getRequest($this->_endpoint, []);
+        $response = json_decode($tournaments, true);
+        return $response;
+     }
+/*
+     function _getTournaments(){
 
         $data = [];
 
@@ -182,17 +213,18 @@ class Tournament extends XS2Event_API  {
         }
         return $response;
     }
+    */
      function getTournamentById($tournamentId){
         
         // $data = ['venue_id'=>$venueId];
-        $response=  $this->getRequest('/tournaments/'.$tournamentId);
+        $response=  $this->getRequest('/competitions/'.$tournamentId);
         return $response;
     }
 
     function saveTournament($data){
 
         $postData = array(
-            'post_title'    => $data->official_name,
+            'post_title'    => $data['name'],
             'post_content'  => '',
             'post_status'   => 'pending',
             'post_type'     => 'tournament',
@@ -213,19 +245,19 @@ class Tournament extends XS2Event_API  {
 
         //save custom_field
         // $official_name = acf_get_field( 'official_name' );
-        update_field( 'official_name', $data->official_name, $postID);
-        update_field( 'tournament_id', $data->tournament_id, $postID);
-        update_field( 'season', $data->season, $postID);
-        update_field( 'tournament_type', $data->tournament_type, $postID);
-        update_field( 'region', $data->region, $postID);
-        update_field( 'sport_type', $data->sport_type, $postID);
-        update_field( 'date_start', $data->date_start, $postID);
-        update_field( 'date_stop', $data->date_stop, $postID);
-        update_field( 'created', $data->created, $postID);
-        update_field( 'updated', $data->updated, $postID);
-        update_field( 'number_events', $data->number_events, $postID);
-        update_field( 'slug', $data->slug, $postID);
-        update_field( 'tournament_metadata',json_encode($data), $postID);
+        update_field( 'official_name', $data['name'], $postID);
+        update_field( 'tournament_id', $data['id'], $postID);
+        // update_field( 'season', $data->season, $postID);
+        // update_field( 'tournament_type', $data->tournament_type, $postID);
+        // update_field( 'region', $data->region, $postID);
+        // update_field( 'sport_type', $data->sport_type, $postID);
+        // update_field( 'date_start', $data->date_start, $postID);
+        // update_field( 'date_stop', $data->date_stop, $postID);
+        // update_field( 'created', $data->created, $postID);
+        // update_field( 'updated', $data->updated, $postID);
+        // update_field( 'number_events', $data->number_events, $postID);
+        // update_field( 'slug', $data->slug, $postID);
+        // update_field( 'tournament_metadata',json_encode($data), $postID);
 
     }
 

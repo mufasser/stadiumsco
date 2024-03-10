@@ -3,6 +3,7 @@ ini_set('memory_limit', '-1');
 ini_set('max_execution_time', 3600);
 
 require_once PLUGIN_DIR_PATH.'utils/class-utils.php';
+require_once PLUGIN_DIR_PATH.'includes/class-travel-connection-api.php'; 
 /**
  * The admin-specific functionality of the plugin.
  *
@@ -92,16 +93,37 @@ class Vip_Football_Tickets_Admin {
 
 	public function vip_football_tickets_page() {
 		
-		// create City Class instance
-		require_once PLUGIN_DIR_PATH.'includes/xs2event/class-city.php'; 
-		require_once PLUGIN_DIR_PATH.'includes/xs2event/class-country.php'; 
-		require_once PLUGIN_DIR_PATH.'includes/xs2event/class-venue.php'; 
 
+		require_once PLUGIN_DIR_PATH.'includes/travel_connection/class-tc-country.php'; 
+		require_once PLUGIN_DIR_PATH.'includes/travel_connection/class-tc-tournament.php'; 
+		require_once PLUGIN_DIR_PATH.'includes/travel_connection/class-tc-team.php'; 
+
+		// sync Travel API data
 		
-		// sync data
+		// fetch and save countries
+		// $country = new Tc_Country();
+		// $country->fetchCountry();
+		// $country->getCountry();
+
+		// fetch tournament
+		// $tournament = new Tc_Tournament();
+		// $tournamentList =  $tournament->fetchTournaments();
+		// $tournament->syncTournaments($tournamentList);
+		
+		// fetch teams
+		$team = new Tc_Team();
+		$teamList =  $team->fetchTeams();
+		print_r($teamList); exit;
+		// $team->syncTeams($teamList);
+
+
+
+
+
+		// sync Xs2API data
 		// $this->vip_sync_venue();
 		// $this->vip_sync_team();
-		$this->vip_sync_tournament();
+		// $this->vip_sync_tournament();
 		// $this->vip_sync_event();
 		// $this->vip_sync_ticket();
 
